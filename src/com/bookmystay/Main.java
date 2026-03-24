@@ -1,44 +1,42 @@
 package com.bookmystay;
 
-import com.bookmystay.inventory.RoomInventory;
-import com.bookmystay.models.DoubleRoom;
-import com.bookmystay.models.Room;
-import com.bookmystay.models.SingleRoom;
-import com.bookmystay.models.SuiteRoom;
-import com.bookmystay.services.SearchService;
-
-import java.util.Arrays;
-import java.util.List;
+import com.bookmystay.models.Reservation;
+import com.bookmystay.services.BookingRequestQueue;
 
 /**
- * UC4 - Search Availability (Read-Only Access)
+ * UC5 - Booking Request Queue
  *
- * Goal: Enable guests to view available rooms and their details without modifying 
- * system state, reinforcing safe data access and clear separation of responsibilities.
+ * Goal: Handle multiple booking requests fairly by introducing a request 
+ * intake mechanism that preserves arrival order, reflecting real-world 
+ * booking behavior during peak demand.
  */
 public class Main {
     public static void main(String[] args) {
         System.out.println("============================================");
-        System.out.println("  BookMyStay - UC4: Search Availability");
+        System.out.println("  BookMyStay - UC5: Booking Request Queue");
         System.out.println("============================================\n");
 
-        System.out.println("[INIT] Setting up Inventory...");
-        RoomInventory inventory = new RoomInventory();
-        inventory.addRoomType("Single", 5);
-        inventory.addRoomType("Double", 0); // Intentionally zero to show filtering
-        inventory.addRoomType("Suite", 2);
+        System.out.println("[INIT] Initializing Booking Request Queue...\n");
+        BookingRequestQueue queue = new BookingRequestQueue();
 
-        // A mock catalog to easily retrieve property values from domain models
-        List<Room> catalog = Arrays.asList(
-            new SingleRoom("N/A"),
-            new DoubleRoom("N/A"),
-            new SuiteRoom("N/A")
-        );
+        System.out.println("--- Guest Requests Incoming ---");
+        // Simulate arriving requests
+        queue.enqueue(new Reservation("Alice", "Single"));
+        queue.enqueue(new Reservation("Bob", "Double"));
+        queue.enqueue(new Reservation("Charlie", "Suite"));
+        
+        System.out.println();
+        queue.displayQueueStatus();
 
-        System.out.println("\n[DEMO] Initiating Search (Notice Double is NOT displayed)...");
-        SearchService searchService = new SearchService();
-        searchService.searchAvailableRooms(inventory, catalog);
+        System.out.println("\n--- Processing Requests (FIFO behavior) ---");
+        while (!queue.isEmpty()) {
+            queue.dequeue();
+        }
 
-        System.out.println("\n[NEXT] UC5 introduces Booking Request Queue to handle multiple booking requests.");
+        System.out.println();
+        queue.displayQueueStatus();
+
+        System.out.println("\n[NOTE] No inventory mutation occurs at this stage; we only sequenced the incoming requests.");
+        System.out.println("[NEXT] UC6 combines the Queue with Inventory to perform safe allocations.");
     }
 }
