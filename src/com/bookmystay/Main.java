@@ -1,49 +1,52 @@
 package com.bookmystay;
 
 import com.bookmystay.inventory.RoomInventory;
+import com.bookmystay.models.AddOnService;
 import com.bookmystay.models.Reservation;
+import com.bookmystay.services.AddOnManager;
 import com.bookmystay.services.BookingRequestQueue;
 import com.bookmystay.services.BookingService;
 
 /**
- * UC6 - Room Allocation and Booking Confirmation
+ * UC7 - Optional Services
  *
- * Goal: Confirm booking requests by assigning rooms safely while ensuring 
- * inventory consistency and preventing double-booking under all circumstances.
+ * Goal: Extend the booking model to support optional services, demonstrating 
+ * how real-world business features can be added without modifying core logic.
  */
 public class Main {
     public static void main(String[] args) {
         System.out.println("============================================");
-        System.out.println("  BookMyStay - UC6: Room Allocation");
+        System.out.println("  BookMyStay - UC7: Optional Add-on Services");
         System.out.println("============================================\n");
 
         RoomInventory inventory = new RoomInventory();
-        inventory.addRoomType("Single", 2); // Max 2 singles
-        inventory.addRoomType("Double", 1);
-        inventory.addRoomType("Suite", 1);
+        inventory.addRoomType("Suite", 5);
 
         BookingRequestQueue queue = new BookingRequestQueue();
-        
-        System.out.println("--- Enqueuing Requests ---");
-        queue.enqueue(new Reservation("Alice", "Single"));
-        queue.enqueue(new Reservation("Bob", "Single"));
-        queue.enqueue(new Reservation("Charlie", "Single")); // Should fail (only 2 avail)
-        queue.enqueue(new Reservation("Dave", "Suite"));
-        System.out.println();
+        queue.enqueue(new Reservation("Eve", "Suite"));
 
-        System.out.println("--- Pre-Allocation Inventory ---");
-        inventory.displayInventory();
         System.out.println();
-
         BookingService bookingService = new BookingService();
         bookingService.processQueue(queue, inventory);
 
-        System.out.println("--- Post-Allocation Inventory ---");
-        inventory.displayInventory();
-        System.out.println();
-        
-        bookingService.displayAllocations();
+        // Assume we know the generated Room ID for Eve (for demo purposes we simulate a known ID)
+        String mockReservationId = "RES-12345";
+        System.out.println("[INFO] Eve's Reservation ID is " + mockReservationId + "\n");
 
-        System.out.println("\n[NEXT] UC7 introduces Optional Add-On Services using Map of Lists.");
+        System.out.println("--- Adding Optional Services ---");
+        AddOnManager addOnManager = new AddOnManager();
+        
+        AddOnService breakfast = new AddOnService("Breakfast Buffet", 25.0);
+        AddOnService spa = new AddOnService("Spa Access", 75.0);
+        AddOnService airportPickup = new AddOnService("Airport Pickup", 50.0);
+
+        addOnManager.addServiceToReservation(mockReservationId, breakfast);
+        addOnManager.addServiceToReservation(mockReservationId, spa);
+        addOnManager.addServiceToReservation(mockReservationId, airportPickup);
+
+        System.out.println();
+        addOnManager.displayAddOns(mockReservationId);
+
+        System.out.println("\n[COMPLETED] BookMyStay core logic (UC1-UC7) is fully implemented.");
     }
 }
