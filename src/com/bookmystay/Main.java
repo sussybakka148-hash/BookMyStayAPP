@@ -1,42 +1,49 @@
 package com.bookmystay;
 
+import com.bookmystay.inventory.RoomInventory;
 import com.bookmystay.models.Reservation;
 import com.bookmystay.services.BookingRequestQueue;
+import com.bookmystay.services.BookingService;
 
 /**
- * UC5 - Booking Request Queue
+ * UC6 - Room Allocation and Booking Confirmation
  *
- * Goal: Handle multiple booking requests fairly by introducing a request 
- * intake mechanism that preserves arrival order, reflecting real-world 
- * booking behavior during peak demand.
+ * Goal: Confirm booking requests by assigning rooms safely while ensuring 
+ * inventory consistency and preventing double-booking under all circumstances.
  */
 public class Main {
     public static void main(String[] args) {
         System.out.println("============================================");
-        System.out.println("  BookMyStay - UC5: Booking Request Queue");
+        System.out.println("  BookMyStay - UC6: Room Allocation");
         System.out.println("============================================\n");
 
-        System.out.println("[INIT] Initializing Booking Request Queue...\n");
+        RoomInventory inventory = new RoomInventory();
+        inventory.addRoomType("Single", 2); // Max 2 singles
+        inventory.addRoomType("Double", 1);
+        inventory.addRoomType("Suite", 1);
+
         BookingRequestQueue queue = new BookingRequestQueue();
-
-        System.out.println("--- Guest Requests Incoming ---");
-        // Simulate arriving requests
-        queue.enqueue(new Reservation("Alice", "Single"));
-        queue.enqueue(new Reservation("Bob", "Double"));
-        queue.enqueue(new Reservation("Charlie", "Suite"));
         
+        System.out.println("--- Enqueuing Requests ---");
+        queue.enqueue(new Reservation("Alice", "Single"));
+        queue.enqueue(new Reservation("Bob", "Single"));
+        queue.enqueue(new Reservation("Charlie", "Single")); // Should fail (only 2 avail)
+        queue.enqueue(new Reservation("Dave", "Suite"));
         System.out.println();
-        queue.displayQueueStatus();
 
-        System.out.println("\n--- Processing Requests (FIFO behavior) ---");
-        while (!queue.isEmpty()) {
-            queue.dequeue();
-        }
-
+        System.out.println("--- Pre-Allocation Inventory ---");
+        inventory.displayInventory();
         System.out.println();
-        queue.displayQueueStatus();
 
-        System.out.println("\n[NOTE] No inventory mutation occurs at this stage; we only sequenced the incoming requests.");
-        System.out.println("[NEXT] UC6 combines the Queue with Inventory to perform safe allocations.");
+        BookingService bookingService = new BookingService();
+        bookingService.processQueue(queue, inventory);
+
+        System.out.println("--- Post-Allocation Inventory ---");
+        inventory.displayInventory();
+        System.out.println();
+        
+        bookingService.displayAllocations();
+
+        System.out.println("\n[NEXT] UC7 introduces Optional Add-On Services using Map of Lists.");
     }
 }
